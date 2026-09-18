@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>GW — carteira de acções</title>
+<style>
+:root{
+  --paper:#FAF9F6; --ink:#142A2C; --muted:#5E7377; --rule:#E2DED6;
+  --direct:#17494D; --indirect:#9DBAB8; --signal:#9A7B1F; --warn:#7D3B34;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+  --sans:"Helvetica Neue",Arial,system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--paper:#101A1B; --ink:#E8EDEB; --muted:#93A7A8; --rule:#26393A;
+        --direct:#6FA8A4; --indirect:#3C5E5F; --signal:#C7A94B; --warn:#C98A80;}
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} *{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+     font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.num{font-family:var(--serif);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+
+.wrap{display:grid;grid-template-columns:186px minmax(0,1fr);gap:56px;
+      max-width:1180px;margin:0 auto;padding:0 28px}
+nav{position:sticky;top:0;align-self:start;height:100vh;padding:38px 0;display:flex;flex-direction:column}
+.mark{font-family:var(--serif);font-size:30px;line-height:1;margin-bottom:4px}
+.mark span{color:var(--muted)}
+.marksub{color:var(--muted);font-size:12px;margin-bottom:34px;max-width:150px}
+nav ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--rule)}
+nav a{display:block;padding:7px 0 7px 14px;margin-left:-1px;border-left:1px solid transparent;
+      color:var(--muted);text-decoration:none;font-size:13px}
+nav a:hover{color:var(--ink)}
+nav a.on{color:var(--ink);border-left-color:var(--direct)}
+.navfoot{margin-top:auto;color:var(--muted);font-size:11px;line-height:1.45}
+
+main{padding:38px 0 120px;min-width:0}
+section{padding-top:16px;margin-bottom:76px;scroll-margin-top:24px}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(30px,4.4vw,46px);line-height:1.1;
+   margin:0 0 20px;max-width:15ch}
+h2{font-family:var(--serif);font-weight:400;font-size:25px;margin:0 0 6px}
+h3{font-size:13px;font-weight:600;margin:28px 0 10px;color:var(--muted)}
+p{max-width:68ch;margin:0 0 14px}
+.lead{font-size:17px;line-height:1.5;color:var(--ink)}
+.sub{color:var(--muted);font-size:13.5px}
+hr{border:0;border-top:1px solid var(--rule);margin:0 0 22px}
+
+/* abertura e barras comparativas */
+.topo{border-top:2px solid var(--ink);padding-top:24px;margin-bottom:56px}
+.topo h1{margin-bottom:6px}
+.fill{height:100%;width:0;transition:width 1.1s cubic-bezier(.22,.9,.3,1)}
+.fill.d{background:var(--direct)}
+.fill.i{background:var(--indirect);
+  background-image:repeating-linear-gradient(135deg,transparent 0 4px,rgba(0,0,0,.16) 4px 5px)}
+.legend{display:flex;gap:20px;font-size:12px;color:var(--muted);margin-top:18px;flex-wrap:wrap}
+.sw{display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-2px}
+.sw.d{background:var(--direct)}
+.sw.i{background:var(--indirect);
+  background-image:repeating-linear-gradient(135deg,transparent 0 4px,rgba(0,0,0,.16) 4px 5px)}
+
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+      background:var(--rule);border:1px solid var(--rule);margin:26px 0 8px}
+.kpi{background:var(--paper);padding:16px 18px}
+.kpi b{display:block;font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.15}
+.kpi span{font-size:12px;color:var(--muted)}
+
+/* barras */
+.bars{margin:6px 0 4px}
+.bar{display:grid;grid-template-columns:minmax(120px,190px) 1fr 104px;gap:14px;align-items:center;
+     padding:5px 0;border-bottom:1px solid var(--rule);font-size:13.5px}
+.bar:last-child{border-bottom:0}
+.bt{height:13px;background:var(--direct);width:0;transition:width .8s ease}
+.bv{text-align:right;font-family:var(--serif);font-variant-numeric:tabular-nums}
+.bpc{color:var(--muted);font-size:12px;margin-left:7px}
+
+/* stacked */
+.stack{display:flex;height:26px;margin:7px 0 3px;overflow:hidden}
+.seg{height:100%}
+.stackrow{margin-bottom:20px}
+.stackhead{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px}
+.stackhead b{font-family:var(--serif);font-weight:400;font-size:18px}
+
+/* tabela */
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 12px}
+input[type=search],select{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--rule);
+  background:var(--paper);color:var(--ink);border-radius:0;min-width:0}
+input[type=search]{flex:1;min-width:180px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:600;font-size:12px;color:var(--muted);padding:7px 9px 7px 0;
+   border-bottom:1px solid var(--ink);cursor:pointer;white-space:nowrap}
+th.r,td.r{text-align:right;padding-right:0}
+td{padding:7px 9px 7px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+tbody tr:hover{background:rgba(23,73,77,.05)}
+.tag{font-size:11px;color:var(--muted)}
+.scroll{overflow-x:auto}
+.count{color:var(--muted);font-size:12px}
+
+/* sobreposicoes */
+.ov{border-top:1px solid var(--rule);padding:14px 0}
+.ovhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.ovname{font-size:15px}
+.ovmult{font-family:var(--serif);font-size:19px;color:var(--signal)}
+.ovbar{display:flex;height:15px;margin:9px 0 7px}
+.ovmeta{font-size:12px;color:var(--muted)}
+
+.note{border-left:2px solid var(--warn);padding:2px 0 2px 16px;margin:24px 0;max-width:66ch}
+.note p{font-size:13.5px;margin:0 0 8px}
+.note p:last-child{margin:0}
+
+@media (max-width:820px){
+  .wrap{grid-template-columns:1fr;gap:0;padding:0 20px}
+  nav{position:static;height:auto;padding:26px 0 8px}
+  nav ol{display:flex;flex-wrap:wrap;gap:0 18px;border-left:0}
+  nav a{padding:5px 0;border-left:0;border-bottom:1px solid transparent}
+  nav a.on{border-left:0;border-bottom-color:var(--direct)}
+  .navfoot{display:none}
+  .bar{grid-template-columns:minmax(90px,1fr) 1.2fr 86px;gap:9px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <div class="mark">GW<span>.</span></div>
+  <div class="marksub">A carteira de acções, vista por inteiro</div>
+  <ol>
+    <li><a href="#panorama">Panorama</a></li>
+    <li><a href="#composicao">Composição</a></li>
+    <li><a href="#posicoes">Posições</a></li>
+    <li><a href="#classificacao">Classificação</a></li>
+    <li><a href="#real">Exposição real</a></li>
+    <li><a href="#opaco">O que não se vê</a></li>
+  </ol>
+  <div class="navfoot">Só acções. Valores em dólares, na avaliação de 10 de setembro de 2026.</div>
+</nav>
+
+<main>
+  <header class="topo">
+    <h1>Carteira de acções</h1>
+    <p class="sub">Três mandatos, 146 linhas de extrato, 180 empresas.</p>
+  </header>
+
+  <section id="panorama">
+    <h2>Panorama</h2>
+    <p class="sub">Três mandatos têm acções. O GW 5 é só fundos hedge e não entra aqui.</p>
+    <div class="kpis" id="kpis"></div>
+    <div id="mandatos" style="margin-top:30px"></div>
+  </section>
+
+  <section id="composicao">
+    <h2>Composição</h2>
+    <p class="sub">O livro de acções por setor, moeda e região. No primeiro eixo, os dois ETFs de índice
+    entram abertos posição a posição em vez de aparecerem como um bloco só.</p>
+    <div class="tools">
+      <select id="eixo">
+        <option value="setor_livro">Por setor, abrindo os ETFs</option>
+        <option value="por_moeda">Por moeda</option>
+        <option value="por_setor">Por setor, sem abrir os ETFs</option>
+        <option value="por_regiao">Por região</option>
+      </select>
+    </div>
+    <div class="bars" id="composicao-bars"></div>
+  </section>
+
+  <section id="posicoes">
+    <h2>Posições</h2>
+    <p class="sub">As 146 linhas de acções, ETFs e fundos de acções. Clique num cabeçalho para ordenar.</p>
+    <div class="tools">
+      <input type="search" id="q" placeholder="Procurar empresa, ticker, setor…" aria-label="Procurar posições">
+      <select id="fc"><option value="">Todos os mandatos</option></select>
+      <select id="fk"><option value="">Todas as regiões</option></select>
+      <span class="count" id="cnt"></span>
+    </div>
+    <div class="scroll"><table id="tbl">
+      <thead><tr>
+        <th data-k="c">Mandato</th><th data-k="d">Posição</th>
+        <th data-k="tk">Ticker</th><th data-k="m">Moeda</th><th data-k="reg">Região</th>
+        <th data-k="v" class="r">Valor</th><th data-k="v" class="r">Peso</th>
+      </tr></thead><tbody></tbody>
+    </table></div>
+  </section>
+
+  <section id="classificacao">
+    <h2>Classificação</h2>
+    <p class="sub">Como cada empresa está catalogada: setor, região, moeda de cotação e por que
+    caminho ela entra na carteira. Para as posições directas, a classificação é a do extrato;
+    para as indirectas, a do gestor do fundo ou do ETF.</p>
+    <div class="tools">
+      <input type="search" id="cq" placeholder="Procurar empresa, ticker, ISIN…" aria-label="Procurar empresas">
+      <select id="cs"><option value="">Todos os setores</option></select>
+      <select id="co">
+        <option value="">Todas as origens</option>
+        <option value="Directa">Só directa</option>
+        <option value="Indirecta">Só indirecta</option>
+        <option value="Ambas">Directa e indirecta</option>
+      </select>
+      <span class="count" id="ccnt"></span>
+    </div>
+    <div class="scroll"><table id="ctbl">
+      <thead><tr>
+        <th data-k="n">Empresa</th><th data-k="tk">Ticker</th><th data-k="s">Setor</th>
+        <th data-k="p">Região</th><th data-k="m">Moeda</th><th data-k="isin">ISIN</th>
+        <th data-k="org">Origem</th><th data-k="t" class="r">Exposição</th>
+      </tr></thead><tbody></tbody>
+    </table></div>
+    <div class="note">
+      <p>A região é a do extrato, não necessariamente a da cotação. A Spotify aparece na Suécia mas é
+      cotada em dólares com custódia nos Estados Unidos; a Compass Group é britânica mas o extrato
+      cota-a em dólares. A Alibaba entra duas vezes, em Hong Kong e como ADR americano.</p>
+      <p>As empresas que chegam só por dentro de um fundo não têm ISIN aqui, porque o que consta no
+      extrato é o ISIN do veículo, não o da empresa.</p>
+    </div>
+  </section>
+
+  <section id="real">
+    <h2>Exposição real</h2>
+    <p class="sub">Para cada empresa, o que está em nome próprio mais o que vem por dentro de um
+    fundo ou ETF — o peso da empresa no veículo multiplicado pela posição no veículo.</p>
+    <div id="sobrep"></div>
+    <div class="note">
+      <p>Isto é exposição bruta comprada. Nenhum fundo divulga as posições vendidas por nome, e num
+      dos fundos elas chegam a 152,5% do património. A exposição líquida é menor do que estes números.</p>
+      <p>Os pesos dentro dos veículos são de datas entre maio e agosto de 2026; a avaliação é de setembro.</p>
+    </div>
+  </section>
+
+  <section id="opaco">
+    <h2>O que não se vê</h2>
+    <p class="sub">Dentro do próprio livro de acções, o que está em veículos que não abrem a composição.</p>
+    <div class="bars" id="opacos"></div>
+  </section>
+</main>
+</div>
+
+<script>
+const D = {"patrimonio":65890654,"patrimonio_global":99433603,"carteiras":{"GW 1":7471002,"GW 2":48961873,"GW 6":9457779},"cart_cat":{"GW 1":{"United Kingdom":2317251,"United States":1522490,"Global":1525065,"China":745916,"Brazil":1360280},"GW 2":{"Germany":10405647,"Spain":2837138,"Netherlands":3099486,"United Kingdom":2536956,"United States":30082646},"GW 6":{"Suíça":297341,"Germany":589254,"Italy":335987,"France":439972,"Belgium":51545,"Spain":291502,"Netherlands":432065,"United Kingdom":786050,"Denmark":38206,"Sweden":31304,"United States":3312749,"Canada":74709,"Japão":75625,"India":304383,"China":1011820,"Korea, South":402384,"Taiwan":765022,"South Africa":49208,"Argentina":24781,"Brazil":68790,"Mexico":75082}},"por_moeda":{"USD":40315430,"EUR":18482596,"GBP":5593817,"HKD":963722,"CHF":297341,"JPY":75625,"CAD":74709,"ZAR":49208,"DKK":38206},"por_setor":{"Financeira":17242432,"Consumo básico":8292225,"Industriais":8217091,"Cuidados saúde":6435556,"Todos sectores":6075953,"Utilidade pública":5397164,"Energia":5188468,"Comunicação":3723757,"Tecnolo informação":3230502,"Bens cons discr":1528599,"Matérias-primas":558907},"por_regiao":{"United States":34917885,"Germany":10994901,"United Kingdom":5640257,"Netherlands":3531551,"Spain":3128640,"China":1757736,"Global":1525065,"Brazil":1429070,"Taiwan":765022,"France":439972,"Korea, South":402384,"Italy":335987,"India":304383,"Suíça":297341,"Japão":75625,"Mexico":75082,"Canada":74709,"Belgium":51545,"South Africa":49208,"Denmark":38206,"Sweden":31304,"Argentina":24781},"setor_livro":{"Financeira":{"dir":17242432,"ind":988405.4167000002},"Consumo básico":{"dir":8292225,"ind":298602.2186},"Industriais":{"dir":8217091,"ind":288472.13779999997},"Cuidados saúde":{"dir":6435556,"ind":261849.363},"Energia":{"dir":5188468,"ind":483844.4149},"Utilidade pública":{"dir":5397164,"ind":188973.98899999997},"Comunicação":{"dir":3723757,"ind":0},"Tecnolo informação":{"dir":3230502,"ind":0},"Não identificado":{"dir":0,"ind":3180320.7729},"Bens cons discr":{"dir":1528599,"ind":37539.4662},"Matérias-primas":{"dir":558907,"ind":347945.22089999996}},"posicoes":[{"c":"GW 1","cat":"Acções","reg":"United Kingdom","d":"Vanguard Funds Plc - Vanguard FTSE 100 UCITS ETF GBP-acc","tk":"","m":"GBP","s":"Todos sectores","v":2317251,"gp":0.8755},{"c":"GW 1","cat":"Acções","reg":"United States","d":"Reg.shs -A- Berkshire Hathaway Inc. (BRK.A) (L1)","tk":"BRK.A","m":"USD","s":"Financeira","v":1522490,"gp":2.2567},{"c":"GW 1","cat":"Acções","reg":"Global","d":"UBS (Lux) Equity SICAV - Long Term Themes (USD) P-acc (u)","tk":"","m":"USD","s":"Todos sectores","v":1525065,"gp":1.0929},{"c":"GW 1","cat":"Acções","reg":"China","d":"UBS (Lux) Equity Fund FCP - China Opportunity (USD) P-acc (u)","tk":"","m":"USD","s":"Todos sectores","v":745916,"gp":-0.1881},{"c":"GW 1","cat":"Acções","reg":"Brazil","d":"iShares MSCI Brazil UCITS ETF (DE) acc","tk":"","m":"USD","s":"Todos sectores","v":1360280,"gp":0.3619},{"c":"GW 2","cat":"Acções","reg":"Germany","d":"Reg.shs Allianz SE (ALV)","tk":"ALV","m":"EUR","s":"Financeira","v":2373933,"gp":0.6355},{"c":"GW 2","cat":"Acções","reg":"Germany","d":"Reg.shs Deutsche Telekom AG (DTE)","tk":"DTE","m":"EUR","s":"Comunicação","v":1667849,"gp":0.2461},{"c":"GW 2","cat":"Acções","reg":"Germany","d":"Pref.shs Henkel AG & Co. KGaA non voting (HEN3)","tk":"HEN3","m":"EUR","s":"Consumo básico","v":967130,"gp":0.048},{"c":"GW 2","cat":"Acções","reg":"Germany","d":"Reg.shs Mercedes-Benz Group AG (MBG)","tk":"MBG","m":"EUR","s":"Bens cons discr","v":870828,"gp":-0.1965},{"c":"GW 2","cat":"Acções","reg":"Germany","d":"Shs RWE AG (RWE)","tk":"RWE","m":"EUR","s":"Utilidade pública","v":1677722,"gp":0.5478},{"c":"GW 2","cat":"Acções","reg":"Germany","d":"Reg.shs Siemens AG (SIE)","tk":"SIE","m":"EUR","s":"Industriais","v":2848185,"gp":0.577},{"c":"GW 2","cat":"Acções","reg":"Spain","d":"Shs Iberdrola SA (IBE)","tk":"IBE","m":"EUR","s":"Utilidade pública","v":2837138,"gp":0.8836},{"c":"GW 2","cat":"Acções","reg":"Netherlands","d":"Shs Heineken NV (HEIA)","tk":"HEIA","m":"EUR","s":"Consumo básico","v":825201,"gp":-0.1141},{"c":"GW 2","cat":"Acções","reg":"Netherlands","d":"Reg.shs NN Group N.V. (NN)","tk":"NN","m":"EUR","s":"Financeira","v":2274285,"gp":0.545},{"c":"GW 2","cat":"Acções","reg":"United Kingdom","d":"Reg.shs British American Tobacco Plc (BATS)","tk":"BATS","m":"GBP","s":"Consumo básico","v":912866,"gp":0.1477},{"c":"GW 2","cat":"Acções","reg":"United Kingdom","d":"Reg shs Shell Plc (SHEL)","tk":"SHEL","m":"GBP","s":"Energia","v":1624090,"gp":0.5509},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs Bank of America Corp (BAC) (L1)","tk":"BAC","m":"USD","s":"Financeira","v":1908080,"gp":0.5108},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs Chevron Corp. (CVX)","tk":"CVX","m":"USD","s":"Energia","v":1872288,"gp":0.5121},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs Coca-Cola Co (KO)","tk":"KO","m":"USD","s":"Consumo básico","v":1449195,"gp":0.4293},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs Eli Lilly & Co (LLY)","tk":"LLY","m":"USD","s":"Cuidados saúde","v":3705900,"gp":0.8478},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs Emerson Electric Co (EMR)","tk":"EMR","m":"USD","s":"Industriais","v":1632070,"gp":0.3979},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs Johnson & Johnson (JNJ)","tk":"JNJ","m":"USD","s":"Cuidados saúde","v":2397150,"gp":0.5744},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs JPMorgan Chase & Co (JPM) (L1)","tk":"JPM","m":"USD","s":"Financeira","v":2828480,"gp":0.8155},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs Marsh & McLennan Cos Inc (Doing Business as Marsh) (MRSH)","tk":"MRSH","m":"USD","s":"Financeira","v":1595610,"gp":0.1078},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs Mondelez International Inc. (MDLZ)","tk":"MDLZ","m":"USD","s":"Consumo básico","v":1717925,"gp":0.0176},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs Morgan Stanley (MS) (L1)","tk":"MS","m":"USD","s":"Financeira","v":3572688,"gp":0.9413},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs PepsiCo Inc. (PEP)","tk":"PEP","m":"USD","s":"Consumo básico","v":915555,"gp":-0.0308},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs Procter and Gamble Co. (PG)","tk":"PG","m":"USD","s":"Consumo básico","v":1343918,"gp":0.0058},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs SLB (SLB)","tk":"SLB","m":"USD","s":"Energia","v":1372245,"gp":0.2575},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs Union Pacific Corp. (UNP)","tk":"UNP","m":"USD","s":"Industriais","v":1543212,"gp":0.3182},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs -B- United Parcel Service Inc. (UPS)","tk":"UPS","m":"USD","s":"Industriais","v":799760,"gp":-0.2519},{"c":"GW 2","cat":"Acções","reg":"United States","d":"Reg.shs The Walt Disney Company Disney Serie (DIS)","tk":"DIS","m":"USD","s":"Comunicação","v":1428570,"gp":-0.0054},{"c":"GW 6","cat":"Acções","reg":"Suíça","d":"Reg.shs COMPAGNIE FINANCIERE RICHEMONT SA (CFR)","tk":"CFR","m":"CHF","s":"Bens cons discr","v":85174,"gp":0.1187},{"c":"GW 6","cat":"Acções","reg":"Suíça","d":"shs Lonza Group AG (LONN)","tk":"LONN","m":"CHF","s":"Cuidados saúde","v":52710,"gp":0.0634},{"c":"GW 6","cat":"Acções","reg":"Suíça","d":"Reg.shs Nestlé AG (NESN)","tk":"NESN","m":"CHF","s":"Consumo básico","v":76593,"gp":-0.0801},{"c":"GW 6","cat":"Acções","reg":"Suíça","d":"Reg.shs Novartis Inc. (NOVN)","tk":"NOVN","m":"CHF","s":"Cuidados saúde","v":82864,"gp":0.1152},{"c":"GW 6","cat":"Acções","reg":"Germany","d":"Reg.shs Deutsche Telekom AG (DTE)","tk":"DTE","m":"EUR","s":"Comunicação","v":87441,"gp":-0.1192},{"c":"GW 6","cat":"Acções","reg":"Germany","d":"Reg.shs Munich Reinsurance Co. vinkuliert (MUV2)","tk":"MUV2","m":"EUR","s":"Financeira","v":86772,"gp":-0.0844},{"c":"GW 6","cat":"Acções","reg":"Germany","d":"Shs RWE AG (RWE)","tk":"RWE","m":"EUR","s":"Utilidade pública","v":69905,"gp":0.1131},{"c":"GW 6","cat":"Acções","reg":"Germany","d":"Shs SAP SE (SAP)","tk":"SAP","m":"EUR","s":"Tecnolo informação","v":82622,"gp":-0.3175},{"c":"GW 6","cat":"Acções","reg":"Germany","d":"Reg.shs Siemens Energy AG (ENR)","tk":"ENR","m":"EUR","s":"Industriais","v":163577,"gp":-0.1237},{"c":"GW 6","cat":"Acções","reg":"Germany","d":"Reg.shs Siemens AG (SIE)","tk":"SIE","m":"EUR","s":"Industriais","v":98937,"gp":0.1554},{"c":"GW 6","cat":"Acções","reg":"Italy","d":"Reg.shs Enel S.p.A. (ENEL)","tk":"ENEL","m":"EUR","s":"Utilidade pública","v":77824,"gp":0.0957},{"c":"GW 6","cat":"Acções","reg":"Italy","d":"Reg.shs Intesa Sanpaolo SpA (ISP) (L1)","tk":"ISP","m":"EUR","s":"Financeira","v":123817,"gp":0.3825},{"c":"GW 6","cat":"Acções","reg":"France","d":"Shs Air Liquide SA (AI)","tk":"AI","m":"EUR","s":"Matérias-primas","v":74587,"gp":0.0334},{"c":"GW 6","cat":"Acções","reg":"France","d":"Shs Axa SA (CS)","tk":"CS","m":"EUR","s":"Financeira","v":114802,"gp":0.0326},{"c":"GW 6","cat":"Acções","reg":"France","d":"Shs Engie SA (ENGI)","tk":"ENGI","m":"EUR","s":"Utilidade pública","v":56454,"gp":-0.1084},{"c":"GW 6","cat":"Acções","reg":"France","d":"Shs EssilorLuxottica SA (EL)","tk":"EL","m":"EUR","s":"Cuidados saúde","v":33884,"gp":-0.4069},{"c":"GW 6","cat":"Acções","reg":"France","d":"Reg.shs Schneider Electric SE (SU)","tk":"SU","m":"EUR","s":"Industriais","v":160245,"gp":0.2341},{"c":"GW 6","cat":"Acções","reg":"Belgium","d":"Shs UCB SA (UCB)","tk":"UCB","m":"EUR","s":"Cuidados saúde","v":51545,"gp":-0.1485},{"c":"GW 6","cat":"Acções","reg":"Spain","d":"Shs Caixabank S.A. (CABK) (L1)","tk":"CABK","m":"EUR","s":"Financeira","v":61472,"gp":0.1327},{"c":"GW 6","cat":"Acções","reg":"Spain","d":"Shs Iberdrola SA (IBE)","tk":"IBE","m":"EUR","s":"Utilidade pública","v":153950,"gp":0.2711},{"c":"GW 6","cat":"Acções","reg":"Spain","d":"Shs Industria de diseno Textil SA from Split (ITX)","tk":"ITX","m":"EUR","s":"Bens cons discr","v":76080,"gp":0.1394},{"c":"GW 6","cat":"Acções","reg":"Netherlands","d":"Depositary Receipts ABN AMRO Bank N.V. (ABN) (L1)","tk":"ABN","m":"EUR","s":"Financeira","v":123827,"gp":0.2405},{"c":"GW 6","cat":"Acções","reg":"Netherlands","d":"Rights (for shs) ABN AMRO Bank NV (L1)","tk":"","m":"EUR","s":"Financeira","v":0,"gp":null},{"c":"GW 6","cat":"Acções","reg":"United Kingdom","d":"Reg.shs Barclays PLC (BARC) (L1)","tk":"BARC","m":"GBP","s":"Financeira","v":124423,"gp":0.4967},{"c":"GW 6","cat":"Acções","reg":"United Kingdom","d":"Reg.shs Compass Group Plc (CPG)","tk":"CPG","m":"USD","s":"Bens cons discr","v":46440,"gp":0.0062},{"c":"GW 6","cat":"Acções","reg":"United Kingdom","d":"Reg.shs London Stock Exchange Group Plc (LSE) (L1)","tk":"LSE","m":"GBP","s":"Financeira","v":40280,"gp":-0.0605},{"c":"GW 6","cat":"Acções","reg":"United Kingdom","d":"Reg.shs RELX Plc (REL)","tk":"REL","m":"GBP","s":"Industriais","v":33720,"gp":-0.1913},{"c":"GW 6","cat":"Acções","reg":"United Kingdom","d":"Reg.shs Rolls-Royce Holdings Plc (RR.)","tk":"RR.","m":"GBP","s":"Industriais","v":58002,"gp":0.2977},{"c":"GW 6","cat":"Acções","reg":"United Kingdom","d":"Reg shs Shell Plc (SHEL)","tk":"SHEL","m":"GBP","s":"Energia","v":210176,"gp":0.3673},{"c":"GW 6","cat":"Acções","reg":"United Kingdom","d":"Reg.shs SSE Plc (SSE)","tk":"SSE","m":"GBP","s":"Utilidade pública","v":58810,"gp":0.1879},{"c":"GW 6","cat":"Acções","reg":"United Kingdom","d":"Reg.shs Tesco Plc (TSCO)","tk":"TSCO","m":"GBP","s":"Consumo básico","v":75736,"gp":0.174},{"c":"GW 6","cat":"Acções","reg":"Denmark","d":"Shs /Reg.shs DSV A/S (DSV)","tk":"DSV","m":"DKK","s":"Industriais","v":38206,"gp":-0.0511},{"c":"GW 6","cat":"Acções","reg":"Sweden","d":"Reg.shs Spotify Technology S.A. (SPOT)","tk":"SPOT","m":"USD","s":"Comunicação","v":31304,"gp":0.0522},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Advanced Micro Devices Inc. (AMD)","tk":"AMD","m":"USD","s":"Tecnolo informação","v":105756,"gp":2.3689},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs -A- Alphabet Inc. (GOOGL)","tk":"GOOGL","m":"USD","s":"Comunicação","v":196234,"gp":0.7712},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Amazon.com Inc. (AMZN)","tk":"AMZN","m":"USD","s":"Bens cons discr","v":158691,"gp":0.2276},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Apple Inc. (AAPL)","tk":"AAPL","m":"USD","s":"Tecnolo informação","v":248193,"gp":0.4704},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Arista Networks Inc. (ANET)","tk":"ANET","m":"USD","s":"Tecnolo informação","v":53484,"gp":1.192},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs -A- Bloom Energy Corp. (BE)","tk":"BE","m":"USD","s":"Industriais","v":31019,"gp":0.0983},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Broadcom Inc. (AVGO)","tk":"AVGO","m":"USD","s":"Tecnolo informação","v":144332,"gp":0.9755},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Constellation Energy Corp. (CEG)","tk":"CEG","m":"USD","s":"Utilidade pública","v":100090,"gp":0.0016},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs -A- CrowdStrike Holdings Inc. (CRWD)","tk":"CRWD","m":"USD","s":"Tecnolo informação","v":41772,"gp":2.1022},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Eaton Corporation Plc (ETN)","tk":"ETN","m":"USD","s":"Industriais","v":73647,"gp":0.2198},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Entergy Corp (ETR)","tk":"ETR","m":"USD","s":"Utilidade pública","v":74011,"gp":0.2409},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Freeport-McMoRan Inc. (FCX)","tk":"FCX","m":"USD","s":"Matérias-primas","v":85452,"gp":0.6053},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs GE Vernova Inc (GEV)","tk":"GEV","m":"USD","s":"Industriais","v":78532,"gp":0.7429},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Intel Corp. (INTC)","tk":"INTC","m":"USD","s":"Tecnolo informação","v":35112,"gp":-0.0214},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Intuitive Surgical Inc. (ISRG)","tk":"ISRG","m":"USD","s":"Cuidados saúde","v":28837,"gp":-0.1732},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Johnson Controls International Plc (JCI)","tk":"JCI","m":"USD","s":"Industriais","v":85686,"gp":0.2419},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg shs Lam Research Corp. (LARd)","tk":"LRCX","m":"USD","s":"Tecnolo informação","v":59602,"gp":1.7292},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Marvell Technology Inc. (MRVL)","tk":"MRVL","m":"USD","s":"Tecnolo informação","v":29505,"gp":0.0404},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs MasTec Inc. (MTZ)","tk":"MTZ","m":"USD","s":"Industriais","v":46440,"gp":-0.1452},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs -A- Mastercard Inc. (MA)","tk":"MA","m":"USD","s":"Financeira","v":45230,"gp":0.198},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs -A- Meta Platforms Inc (META)","tk":"META","m":"USD","s":"Comunicação","v":90213,"gp":0.2229},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Micron Technology Inc. (MU)","tk":"MU","m":"USD","s":"Tecnolo informação","v":136837,"gp":8.2627},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Microsoft Corp. (MSFT)","tk":"MSFT","m":"USD","s":"Tecnolo informação","v":221598,"gp":0.0887},{"c":"GW 6","cat":"Acções","reg":"United States","d":"N-Akt Netflix Inc. (NFLX)","tk":"NFLX","m":"USD","s":"Comunicação","v":38005,"gp":-0.3342},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs NextEra Energy Inc (NEE)","tk":"NEE","m":"USD","s":"Utilidade pública","v":86727,"gp":0.0904},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs NRG Energy Inc. (NRG)","tk":"NRG","m":"USD","s":"Utilidade pública","v":46893,"gp":-0.2982},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs NVIDIA Corp. (NVDA)","tk":"NVDA","m":"USD","s":"Tecnolo informação","v":283868,"gp":0.5702},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Oracle Corp. (ORCL)","tk":"ORCL","m":"USD","s":"Tecnolo informação","v":45882,"gp":0.0533},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs -A- Palantir Technologies Inc. (PLTR)","tk":"PLTR","m":"USD","s":"Tecnolo informação","v":33172,"gp":0.2196},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Quanta Services Inc. (PWR)","tk":"PWR","m":"USD","s":"Industriais","v":77341,"gp":0.6542},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Rockwell Automation Inc. (ROK)","tk":"ROK","m":"USD","s":"Industriais","v":42137,"gp":0.6215},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Salesforce Inc (CRM)","tk":"CRM","m":"USD","s":"Tecnolo informação","v":36450,"gp":0.0434},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs ServiceNow Inc. (NOW)","tk":"NOW","m":"USD","s":"Tecnolo informação","v":59027,"gp":0.2024},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs -A- Space Exploration Technologies Corp. (SPCX)","tk":"SPCX","m":"USD","s":"Comunicação","v":29636,"gp":0.0155},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Talen Energy Corp (TLN)","tk":"TLN","m":"USD","s":"Utilidade pública","v":34269,"gp":0.1458},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Texas Instruments Inc. (TXN)","tk":"TXN","m":"USD","s":"Tecnolo informação","v":43999,"gp":0.2},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Trane Technologies Plc (TT)","tk":"TT","m":"USD","s":"Industriais","v":30788,"gp":0.0379},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs -A- Vertiv Holdings Co (VRT)","tk":"VRT","m":"USD","s":"Industriais","v":86846,"gp":0.6292},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs -A- Visa Inc. (V)","tk":"V","m":"USD","s":"Financeira","v":44065,"gp":0.3442},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Vistra Corp (VST)","tk":"VST","m":"USD","s":"Utilidade pública","v":70584,"gp":-0.1249},{"c":"GW 6","cat":"Acções","reg":"United States","d":"Reg.shs Xcel Energy Inc (XEL)","tk":"XEL","m":"USD","s":"Utilidade pública","v":52787,"gp":0.0162},{"c":"GW 6","cat":"Acções","reg":"Canada","d":"Reg.shs Lundin Mining Corp. (LUN)","tk":"LUN","m":"CAD","s":"Matérias-primas","v":24971,"gp":0.7404},{"c":"GW 6","cat":"Acções","reg":"Canada","d":"Reg.shs First Quantum Minerals Ltd (FM)","tk":"FM","m":"CAD","s":"Matérias-primas","v":49738,"gp":0.4124},{"c":"GW 6","cat":"Acções","reg":"Japão","d":"Reg.shs Hitachi Ltd (6501)","tk":"6501","m":"JPY","s":"Industriais","v":75625,"gp":0.1477},{"c":"GW 6","cat":"Acções","reg":"India","d":"UBS MSCI India Universal UCITS ETF USD acc","tk":"","m":"USD","s":"Todos sectores","v":127441,"gp":-0.1028},{"c":"GW 6","cat":"Acções","reg":"India","d":"Sponsored American Deposit Receipt HDFC Bank Ltd (Repr. 3 shs) (HDB) (L1)","tk":"HDB","m":"USD","s":"Financeira","v":28392,"gp":-0.3543},{"c":"GW 6","cat":"Acções","reg":"India","d":"Sponsored American Deposit Receipt ICICI Bank Ltd (Repr. 2 shs) (IBN) (L1)","tk":"IBN","m":"USD","s":"Financeira","v":66355,"gp":-0.0686},{"c":"GW 6","cat":"Acções","reg":"India","d":"Sponsored American Deposit Receipt Infosys Ltd (Repr. 1 shs) (INFY)","tk":"INFY","m":"USD","s":"Tecnolo informação","v":21820,"gp":-0.2828},{"c":"GW 6","cat":"Acções","reg":"India","d":"Sponsored Global Deposit Receipt Reliance Industries Ltd (Repr. 4 shs) (RIGD)","tk":"RIGD","m":"USD","s":"Energia","v":60375,"gp":-0.1616},{"c":"GW 6","cat":"Acções","reg":"China","d":"Reg.shs Alibaba Group Holding Ltd Reg S (9988)","tk":"9988","m":"HKD","s":"Bens cons discr","v":88616,"gp":-0.3147},{"c":"GW 6","cat":"Acções","reg":"China","d":"Sponsored American Deposit Receipt Shs Alibaba Group Holding Ltd (Repr. 8 shs) (BABA)","tk":"BABA","m":"USD","s":"Bens cons discr","v":32568,"gp":0.4558},{"c":"GW 6","cat":"Acções","reg":"China","d":"Reg.shs -H- BYD Co. Ltd (1211)","tk":"1211","m":"HKD","s":"Bens cons discr","v":71016,"gp":-0.2916},{"c":"GW 6","cat":"Acções","reg":"China","d":"Shs -H- China Construction Bank Corp. (939) (L1)","tk":"939","m":"HKD","s":"Financeira","v":74721,"gp":0.203},{"c":"GW 6","cat":"Acções","reg":"China","d":"Shs -H- China Life Insurance Co. Ltd (2628)","tk":"2628","m":"HKD","s":"Financeira","v":76876,"gp":-0.0134},{"c":"GW 6","cat":"Acções","reg":"China","d":"Reg.shs Chow Tai Fook Jewellery Group Ltd (1929)","tk":"1929","m":"HKD","s":"Bens cons discr","v":35023,"gp":0.0271},{"c":"GW 6","cat":"Acções","reg":"China","d":"Shs -H- CMOC Group Limited","tk":"","m":"HKD","s":"Matérias-primas","v":39805,"gp":0.7028},{"c":"GW 6","cat":"Acções","reg":"China","d":"Reg.shs China Hongqiao Group Ltd (1378)","tk":"1378","m":"HKD","s":"Matérias-primas","v":38862,"gp":0.0869},{"c":"GW 6","cat":"Acções","reg":"China","d":"Reg.shs-H- Contemporary Amperex Technology Co. Ltd Reg S (3750)","tk":"3750","m":"HKD","s":"Industriais","v":78770,"gp":-0.0688},{"c":"GW 6","cat":"Acções","reg":"China","d":"Sponsored American Deposit Receipt GDS Holdings Ltd (Repr. 8 shs -A-) (GDS)","tk":"GDS","m":"USD","s":"Tecnolo informação","v":15530,"gp":-0.058},{"c":"GW 6","cat":"Acções","reg":"China","d":"Reg. shs GDS Holdings Ltd (9698)","tk":"9698","m":"HKD","s":"Tecnolo informação","v":32158,"gp":-0.2349},{"c":"GW 6","cat":"Acções","reg":"China","d":"Shs -H- Industrial and Commercial Bank of China Ltd (1398) (L1)","tk":"1398","m":"HKD","s":"Financeira","v":48526,"gp":0.0973},{"c":"GW 6","cat":"Acções","reg":"China","d":"Reg.shs.-H- Montage Technology Co., Ltd (6809)","tk":"6809","m":"HKD","s":"Tecnolo informação","v":24139,"gp":-0.4145},{"c":"GW 6","cat":"Acções","reg":"China","d":"Shs -H- PetroChina Co. Ltd (857)","tk":"857","m":"HKD","s":"Energia","v":38604,"gp":0.1198},{"c":"GW 6","cat":"Acções","reg":"China","d":"Reg.shs Tencent Holdings Ltd (700)","tk":"700","m":"HKD","s":"Comunicação","v":124839,"gp":-0.2497},{"c":"GW 6","cat":"Acções","reg":"China","d":"Reg.shs Trip Com Group Ltd (9961)","tk":"9961","m":"HKD","s":"Bens cons discr","v":39382,"gp":-0.329},{"c":"GW 6","cat":"Acções","reg":"China","d":"Shs -H- Zijin Mining Group","tk":"","m":"HKD","s":"Matérias-primas","v":152385,"gp":0.1549},{"c":"GW 6","cat":"Acções","reg":"Korea, South","d":"Sponsored Global Deposit Receipt Samsung Electronics Co Ltd (Repr 25 Shs-Unitary) (SMSN)","tk":"SMSN","m":"USD","s":"Tecnolo informação","v":402384,"gp":0.4027},{"c":"GW 6","cat":"Acções","reg":"Taiwan","d":"Sponsored American Deposit Receipt ASE Technology Holding Co Ltd (Repr 2 Shs)","tk":"","m":"USD","s":"Tecnolo informação","v":131538,"gp":0.91},{"c":"GW 6","cat":"Acções","reg":"Taiwan","d":"Sponsored American Deposit Receipt Taiwan Semicon. Manuf.Co Ltd (Repr. 5 shs) (TSM)","tk":"TSM","m":"USD","s":"Tecnolo informação","v":633484,"gp":0.372},{"c":"GW 6","cat":"Acções","reg":"South Africa","d":"Reg.shs Absa Group Limited (ABG) (L1)","tk":"ABG","m":"ZAR","s":"Financeira","v":49208,"gp":0.058},{"c":"GW 6","cat":"Acções","reg":"Argentina","d":"Reg.shs MercadoLibre Inc. (MELI)","tk":"MELI","m":"USD","s":"Bens cons discr","v":24781,"gp":0.0179},{"c":"GW 6","cat":"Acções","reg":"Brazil","d":"Sponsored American Deposit Receipt Itau Unibanco Holding SA (Repr. 1 pref.shs) (ITUB)","tk":"ITUB","m":"USD","s":"Financeira","v":58100,"gp":0.0771},{"c":"GW 6","cat":"Acções","reg":"Brazil","d":"Sponsored American Deposit Receipt Petroleo Brasileiro -Petrobras (Repr. 2 shs) (PBR)","tk":"PBR","m":"USD","s":"Energia","v":10690,"gp":0.6742},{"c":"GW 6","cat":"Acções","reg":"Mexico","d":"Spons American Deposit Receipt America Movil SAB de CV (Repr 20 Shs-B-) (AMX)","tk":"AMX","m":"USD","s":"Comunicação","v":29666,"gp":-0.0883},{"c":"GW 6","cat":"Acções","reg":"Mexico","d":"Sponsored American Deposit Receipt Cemex SAB de CV (Repr. 10 CPO) (CX)","tk":"CX","m":"USD","s":"Matérias-primas","v":37310,"gp":-0.0004},{"c":"GW 6","cat":"Acções","reg":"Mexico","d":"Sponsored American Deposit Receipt Wal-Mart de Mexico SAB de CV (Repr. 10 shs -V-)","tk":"","m":"USD","s":"Consumo básico","v":8106,"gp":-0.2104},{"c":"GW 6","cat":"Acções","reg":"Netherlands","d":"Reg.shs ASML Holding NV (ASML)","tk":"ASML","m":"EUR","s":"Tecnolo informação","v":308238,"gp":0.7711},{"c":"GW 6","cat":"Acções","reg":"United Kingdom","d":"Reg.shs Anglo American PLC (AGL)","tk":"AGL","m":"GBP","s":"Matérias-primas","v":55797,"gp":0.5808},{"c":"GW 6","cat":"Acções","reg":"United Kingdom","d":"Reg.shs AstraZeneca Plc (AZN)","tk":"AZN","m":"GBP","s":"Cuidados saúde","v":82666,"gp":-0.1655},{"c":"GW 6","cat":"Acções","reg":"Italy","d":"Reg.shs Leonardo S.p.a. (LDO)","tk":"LDO","m":"EUR","s":"Industriais","v":69738,"gp":0.0336},{"c":"GW 6","cat":"Acções","reg":"Italy","d":"Reg.shs Prysmian S.p.A. (PRY)","tk":"PRY","m":"EUR","s":"Industriais","v":64608,"gp":0.2542}],"empresas":[{"n":"Reg.shs Eli Lilly & Co (LLY)","tk":"LLY","p":"United States","s":"Cuidados saúde","d":3705900,"i":0,"m":"USD","isin":"US5324571083","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Morgan Stanley (MS) (L1)","tk":"MS","p":"United States","s":"Financeira","d":3572688,"i":0,"m":"USD","isin":"US6174464486","cust":"United States","org":"Directa","via":[]},{"n":"Shs Iberdrola SA (IBE)","tk":"IBE","p":"Spain","s":"Utilidade pública","d":2991088,"i":0,"m":"EUR","isin":"ES0144580Y14","cust":"Spain","org":"Directa","via":[]},{"n":"Reg.shs Siemens AG (SIE)","tk":"SIE","p":"Germany","s":"Industriais","d":2947122,"i":0,"m":"EUR","isin":"DE0007236101","cust":"","org":"Directa","via":[]},{"n":"Reg.shs JPMorgan Chase & Co (JPM) (L1)","tk":"JPM","p":"United States","s":"Financeira","d":2828480,"i":0,"m":"USD","isin":"US46625H1005","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Johnson & Johnson (JNJ)","tk":"JNJ","p":"United States","s":"Cuidados saúde","d":2397150,"i":0,"m":"USD","isin":"US4781601046","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Allianz SE (ALV)","tk":"ALV","p":"Germany","s":"Financeira","d":2373933,"i":0,"m":"EUR","isin":"DE0008404005","cust":"","org":"Directa","via":[]},{"n":"Reg.shs NN Group N.V. (NN)","tk":"NN","p":"Netherlands","s":"Financeira","d":2274285,"i":0,"m":"EUR","isin":"NL0010773842","cust":"Netherlands","org":"Directa","via":[]},{"n":"Reg shs Shell Plc (SHEL)","tk":"SHEL","p":"United Kingdom","s":"Energia","d":1834266,"i":164757,"m":"GBP","isin":"GB00BP6MXD84","cust":"","org":"Ambas","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Bank of America Corp (BAC) (L1)","tk":"BAC","p":"United States","s":"Financeira","d":1908080,"i":0,"m":"USD","isin":"US0605051046","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Chevron Corp. (CVX)","tk":"CVX","p":"United States","s":"Energia","d":1872288,"i":0,"m":"USD","isin":"US1667641005","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Deutsche Telekom AG (DTE)","tk":"DTE","p":"Germany","s":"Comunicação","d":1755290,"i":0,"m":"EUR","isin":"DE0005557508","cust":"","org":"Directa","via":[]},{"n":"Shs RWE AG (RWE)","tk":"RWE","p":"Germany","s":"Utilidade pública","d":1747627,"i":0,"m":"EUR","isin":"DE0007037129","cust":"","org":"Directa","via":[]},{"n":"Reg.shs Mondelez International Inc. (MDLZ)","tk":"MDLZ","p":"United States","s":"Consumo básico","d":1717925,"i":0,"m":"USD","isin":"US6092071058","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Emerson Electric Co (EMR)","tk":"EMR","p":"United States","s":"Industriais","d":1632070,"i":0,"m":"USD","isin":"US2910111044","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Marsh & McLennan Cos Inc (Doing Business as Marsh) (MRSH)","tk":"MRSH","p":"United States","s":"Financeira","d":1595610,"i":0,"m":"USD","isin":"US5717481023","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Union Pacific Corp. (UNP)","tk":"UNP","p":"United States","s":"Industriais","d":1543212,"i":0,"m":"USD","isin":"US9078181081","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs -A- Berkshire Hathaway Inc. (BRK.A) (L1)","tk":"BRK.A","p":"United States","s":"Financeira","d":1522490,"i":0,"m":"USD","isin":"US0846701086","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Coca-Cola Co (KO)","tk":"KO","p":"United States","s":"Consumo básico","d":1449195,"i":0,"m":"USD","isin":"US1912161007","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs The Walt Disney Company Disney Serie (DIS)","tk":"DIS","p":"United States","s":"Comunicação","d":1428570,"i":0,"m":"USD","isin":"US2546871060","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs SLB (SLB)","tk":"SLB","p":"United States","s":"Energia","d":1372245,"i":0,"m":"USD","isin":"AN8068571086","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Procter and Gamble Co. (PG)","tk":"PG","p":"United States","s":"Consumo básico","d":1343918,"i":0,"m":"USD","isin":"US7427181091","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs British American Tobacco Plc (BATS)","tk":"BATS","p":"United Kingdom","s":"Consumo básico","d":912866,"i":89678,"m":"GBP","isin":"GB0002875804","cust":"","org":"Ambas","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Pref.shs Henkel AG & Co. KGaA non voting (HEN3)","tk":"HEN3","p":"Germany","s":"Consumo básico","d":967130,"i":0,"m":"EUR","isin":"DE0006048432","cust":"","org":"Directa","via":[]},{"n":"Reg.shs PepsiCo Inc. (PEP)","tk":"PEP","p":"United States","s":"Consumo básico","d":915555,"i":0,"m":"USD","isin":"US7134481081","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Mercedes-Benz Group AG (MBG)","tk":"MBG","p":"Germany","s":"Bens cons discr","d":870828,"i":0,"m":"EUR","isin":"DE0007100000","cust":"","org":"Directa","via":[]},{"n":"Shs Heineken NV (HEIA)","tk":"HEIA","p":"Netherlands","s":"Consumo básico","d":825201,"i":0,"m":"EUR","isin":"NL0000009165","cust":"Netherlands","org":"Directa","via":[]},{"n":"Reg.shs -B- United Parcel Service Inc. (UPS)","tk":"UPS","p":"United States","s":"Industriais","d":799760,"i":0,"m":"USD","isin":"US9113121068","cust":"United States","org":"Directa","via":[]},{"n":"Sponsored American Deposit Receipt Taiwan Semicon. Manuf.Co Ltd (Repr. 5 shs) (TSM)","tk":"TSM","p":"Taiwan","s":"Tecnolo informação","d":633484,"i":0,"m":"USD","isin":"US8740391003","cust":"United States","org":"Directa","via":[]},{"n":"Sponsored Global Deposit Receipt Samsung Electronics Co Ltd (Repr 25 Shs-Unitary) (SMSN)","tk":"SMSN","p":"Korea, South","s":"Tecnolo informação","d":402384,"i":7814,"m":"USD","isin":"US7960508882","cust":"United Kingdom","org":"Ambas","via":["Jupiter Merian Global Eq. Abs. Return"]},{"n":"Reg.shs ASML Holding NV (ASML)","tk":"ASML","p":"Netherlands","s":"Tecnolo informação","d":308238,"i":39575,"m":"EUR","isin":"NL0010273215","cust":"Netherlands","org":"Ambas","via":["Schroder GAIA Egerton Equity"]},{"n":"Reg.shs NVIDIA Corp. (NVDA)","tk":"NVDA","p":"United States","s":"Tecnolo informação","d":283868,"i":27975,"m":"USD","isin":"US67066G1040","cust":"United States","org":"Ambas","via":["Schroder GAIA Egerton Equity"]},{"n":"Reg.shs AstraZeneca Plc (AZN)","tk":"AZN","p":"United Kingdom","s":"Cuidados saúde","d":82666,"i":192100,"m":"GBP","isin":"GB0009895292","cust":"United Kingdom","org":"Ambas","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Apple Inc. (AAPL)","tk":"AAPL","p":"United States","s":"Tecnolo informação","d":248193,"i":0,"m":"USD","isin":"US0378331005","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs -A- Alphabet Inc. (GOOGL)","tk":"GOOGL","p":"United States","s":"Comunicação","d":196234,"i":33434,"m":"USD","isin":"US02079K3059","cust":"United States","org":"Ambas","via":["Schroder GAIA Egerton Equity"]},{"n":"HSBC Holdings plc","tk":"HSBA","p":"United Kingdom","s":"Financeira","d":0,"i":222224,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Microsoft Corp. (MSFT)","tk":"MSFT","p":"United States","s":"Tecnolo informação","d":221598,"i":0,"m":"USD","isin":"US5949181045","cust":"United States","org":"Directa","via":[]},{"n":"Sponsored American Deposit Receipt Petroleo Brasileiro -Petrobras (Repr. 2 shs) (PBR)","tk":"PBR","p":"Brazil","s":"Energia","d":10690,"i":196288,"m":"USD","isin":"US71654V4086","cust":"United States","org":"Ambas","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Reg.shs Rolls-Royce Holdings Plc (RR.)","tk":"RR.","p":"United Kingdom","s":"Industriais","d":58002,"i":147739,"m":"GBP","isin":"GB00B63H8491","cust":"","org":"Ambas","via":["Schroder GAIA Egerton Equity","Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Amazon.com Inc. (AMZN)","tk":"AMZN","p":"United States","s":"Bens cons discr","d":158691,"i":42304,"m":"USD","isin":"US0231351067","cust":"United States","org":"Ambas","via":["Schroder GAIA Egerton Equity"]},{"n":"Reg.shs Barclays PLC (BARC) (L1)","tk":"BARC","p":"United Kingdom","s":"Financeira","d":124423,"i":59090,"m":"GBP","isin":"GB0031348658","cust":"","org":"Ambas","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Sponsored American Deposit Receipt Itau Unibanco Holding SA (Repr. 1 pref.shs) (ITUB)","tk":"ITUB","p":"Brazil","s":"Financeira","d":58100,"i":123513,"m":"USD","isin":"US4655621062","cust":"United States","org":"Ambas","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Reg.shs Siemens Energy AG (ENR)","tk":"ENR","p":"Germany","s":"Industriais","d":163577,"i":0,"m":"EUR","isin":"DE000ENER6Y0","cust":"","org":"Directa","via":[]},{"n":"Reg.shs Schneider Electric SE (SU)","tk":"SU","p":"France","s":"Industriais","d":160245,"i":0,"m":"EUR","isin":"FR0000121972","cust":"France","org":"Directa","via":[]},{"n":"Shs -H- Zijin Mining Group","tk":"","p":"China","s":"Matérias-primas","d":152385,"i":0,"m":"HKD","isin":"CNE100000502","cust":"","org":"Directa","via":[]},{"n":"Vale S.A.","tk":"VALE3","p":"Brazil","s":"Matérias-primas","d":0,"i":145550,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Reg.shs Broadcom Inc. (AVGO)","tk":"AVGO","p":"United States","s":"Tecnolo informação","d":144332,"i":0,"m":"USD","isin":"US11135F1012","cust":"United States","org":"Directa","via":[]},{"n":"Nu Holdings Ltd.","tk":"NU","p":"Brazil","s":"Financeira","d":0,"i":143510,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Reg.shs Micron Technology Inc. (MU)","tk":"MU","p":"United States","s":"Tecnolo informação","d":136837,"i":0,"m":"USD","isin":"US5951121038","cust":"United States","org":"Directa","via":[]},{"n":"Sponsored American Deposit Receipt ASE Technology Holding Co Ltd (Repr 2 Shs)","tk":"","p":"Taiwan","s":"Tecnolo informação","d":131538,"i":0,"m":"USD","isin":"US00215W1009","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Tencent Holdings Ltd (700)","tk":"700","p":"China","s":"Comunicação","d":124839,"i":0,"m":"HKD","isin":"KYG875721634","cust":"","org":"Directa","via":[]},{"n":"Depositary Receipts ABN AMRO Bank N.V. (ABN) (L1)","tk":"ABN","p":"Netherlands","s":"Financeira","d":123827,"i":0,"m":"EUR","isin":"NL0011540547","cust":"Netherlands","org":"Directa","via":[]},{"n":"Reg.shs Intesa Sanpaolo SpA (ISP) (L1)","tk":"ISP","p":"Italy","s":"Financeira","d":123817,"i":0,"m":"EUR","isin":"IT0000072618","cust":"Italy","org":"Directa","via":[]},{"n":"Shs Axa SA (CS)","tk":"CS","p":"France","s":"Financeira","d":114802,"i":0,"m":"EUR","isin":"FR0000120628","cust":"France","org":"Directa","via":[]},{"n":"Reg.shs Advanced Micro Devices Inc. (AMD)","tk":"AMD","p":"United States","s":"Tecnolo informação","d":105756,"i":0,"m":"USD","isin":"US0079031078","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Constellation Energy Corp. (CEG)","tk":"CEG","p":"United States","s":"Utilidade pública","d":100090,"i":0,"m":"USD","isin":"US21037T1097","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs -A- Visa Inc. (V)","tk":"V","p":"United States","s":"Financeira","d":44065,"i":54586,"m":"USD","isin":"US92826C8394","cust":"United States","org":"Ambas","via":["Schroder GAIA Egerton Equity"]},{"n":"Reg.shs Anglo American PLC (AGL)","tk":"AGL","p":"United Kingdom","s":"Matérias-primas","d":55797,"i":39393,"m":"GBP","isin":"GB00BTK05J60","cust":"","org":"Ambas","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs -A- Meta Platforms Inc (META)","tk":"META","p":"United States","s":"Comunicação","d":90213,"i":0,"m":"USD","isin":"US30303M1027","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Alibaba Group Holding Ltd Reg S (9988)","tk":"9988","p":"China","s":"Bens cons discr","d":88616,"i":0,"m":"HKD","isin":"KYG017191142","cust":"","org":"Directa","via":[]},{"n":"Reg.shs -A- Vertiv Holdings Co (VRT)","tk":"VRT","p":"United States","s":"Industriais","d":86846,"i":0,"m":"USD","isin":"US92537N1081","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Munich Reinsurance Co. vinkuliert (MUV2)","tk":"MUV2","p":"Germany","s":"Financeira","d":86772,"i":0,"m":"EUR","isin":"DE0008430026","cust":"","org":"Directa","via":[]},{"n":"Reg.shs NextEra Energy Inc (NEE)","tk":"NEE","p":"United States","s":"Utilidade pública","d":86727,"i":0,"m":"USD","isin":"US65339F1012","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Johnson Controls International Plc (JCI)","tk":"JCI","p":"United States","s":"Industriais","d":85686,"i":0,"m":"USD","isin":"IE00BY7QL619","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Freeport-McMoRan Inc. (FCX)","tk":"FCX","p":"United States","s":"Matérias-primas","d":85452,"i":0,"m":"USD","isin":"US35671D8570","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs COMPAGNIE FINANCIERE RICHEMONT SA (CFR)","tk":"CFR","p":"Suíça","s":"Bens cons discr","d":85174,"i":0,"m":"CHF","isin":"CH0210483332","cust":"Switzerland","org":"Directa","via":[]},{"n":"Reg.shs SSE Plc (SSE)","tk":"SSE","p":"United Kingdom","s":"Utilidade pública","d":58810,"i":26185,"m":"GBP","isin":"GB0007908733","cust":"","org":"Ambas","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Compass Group Plc (CPG)","tk":"CPG","p":"United Kingdom","s":"Bens cons discr","d":46440,"i":37539,"m":"USD","isin":"GB00BD6K4575","cust":"","org":"Ambas","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Unilever PLC","tk":"ULVR","p":"United Kingdom","s":"Consumo básico","d":0,"i":83884,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Novartis Inc. (NOVN)","tk":"NOVN","p":"Suíça","s":"Cuidados saúde","d":82864,"i":0,"m":"CHF","isin":"CH0012005267","cust":"Switzerland","org":"Directa","via":[]},{"n":"Shs SAP SE (SAP)","tk":"SAP","p":"Germany","s":"Tecnolo informação","d":82622,"i":0,"m":"EUR","isin":"DE0007164600","cust":"","org":"Directa","via":[]},{"n":"Reg.shs London Stock Exchange Group Plc (LSE) (L1)","tk":"LSE","p":"United Kingdom","s":"Financeira","d":40280,"i":40784,"m":"GBP","isin":"GB00B0SWJX34","cust":"","org":"Ambas","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs-H- Contemporary Amperex Technology Co. Ltd Reg S (3750)","tk":"3750","p":"China","s":"Industriais","d":78770,"i":0,"m":"HKD","isin":"CNE100006WS8","cust":"","org":"Directa","via":[]},{"n":"Reg.shs GE Vernova Inc (GEV)","tk":"GEV","p":"United States","s":"Industriais","d":78532,"i":0,"m":"USD","isin":"US36828A1016","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Enel S.p.A. (ENEL)","tk":"ENEL","p":"Italy","s":"Utilidade pública","d":77824,"i":0,"m":"EUR","isin":"IT0003128367","cust":"Italy","org":"Directa","via":[]},{"n":"Reg.shs Quanta Services Inc. (PWR)","tk":"PWR","p":"United States","s":"Industriais","d":77341,"i":0,"m":"USD","isin":"US74762E1029","cust":"United States","org":"Directa","via":[]},{"n":"Shs -H- China Life Insurance Co. Ltd (2628)","tk":"2628","p":"China","s":"Financeira","d":76876,"i":0,"m":"HKD","isin":"CNE1000002L3","cust":"","org":"Directa","via":[]},{"n":"Reg.shs Nestlé AG (NESN)","tk":"NESN","p":"Suíça","s":"Consumo básico","d":76593,"i":0,"m":"CHF","isin":"CH0038863350","cust":"Switzerland","org":"Directa","via":[]},{"n":"Rio Tinto Group","tk":"RIO","p":"United Kingdom","s":"Matérias-primas","d":0,"i":76469,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Shs Industria de diseno Textil SA from Split (ITX)","tk":"ITX","p":"Spain","s":"Bens cons discr","d":76080,"i":0,"m":"EUR","isin":"ES0148396007","cust":"Spain","org":"Directa","via":[]},{"n":"BP p.l.c.","tk":"BP","p":"United Kingdom","s":"Energia","d":0,"i":76006,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Tesco Plc (TSCO)","tk":"TSCO","p":"United Kingdom","s":"Consumo básico","d":75736,"i":0,"m":"GBP","isin":"GB00BLGZ9862","cust":"","org":"Directa","via":[]},{"n":"Reg.shs Hitachi Ltd (6501)","tk":"6501","p":"Japão","s":"Industriais","d":75625,"i":0,"m":"JPY","isin":"JP3788600009","cust":"Japan","org":"Directa","via":[]},{"n":"Reg.shs RELX Plc (REL)","tk":"REL","p":"United Kingdom","s":"Industriais","d":33720,"i":41479,"m":"GBP","isin":"GB00B2B0DG97","cust":"","org":"Ambas","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Shs -H- China Construction Bank Corp. (939) (L1)","tk":"939","p":"China","s":"Financeira","d":74721,"i":0,"m":"HKD","isin":"CNE1000002H1","cust":"","org":"Directa","via":[]},{"n":"Shs Air Liquide SA (AI)","tk":"AI","p":"France","s":"Matérias-primas","d":74587,"i":0,"m":"EUR","isin":"FR0000120073","cust":"France","org":"Directa","via":[]},{"n":"Reg.shs Entergy Corp (ETR)","tk":"ETR","p":"United States","s":"Utilidade pública","d":74011,"i":0,"m":"USD","isin":"US29364G1031","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Eaton Corporation Plc (ETN)","tk":"ETN","p":"United States","s":"Industriais","d":73647,"i":0,"m":"USD","isin":"IE00B8KQN827","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs -H- BYD Co. Ltd (1211)","tk":"1211","p":"China","s":"Bens cons discr","d":71016,"i":0,"m":"HKD","isin":"CNE100000296","cust":"","org":"Directa","via":[]},{"n":"Reg.shs Vistra Corp (VST)","tk":"VST","p":"United States","s":"Utilidade pública","d":70584,"i":0,"m":"USD","isin":"US92840M1027","cust":"United States","org":"Directa","via":[]},{"n":"GSK plc","tk":"GSK","p":"United Kingdom","s":"Cuidados saúde","d":0,"i":69749,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Leonardo S.p.a. (LDO)","tk":"LDO","p":"Italy","s":"Industriais","d":69738,"i":0,"m":"EUR","isin":"IT0003856405","cust":"Italy","org":"Directa","via":[]},{"n":"Banco Bradesco S.A.","tk":"BBDC","p":"Brazil","s":"Financeira","d":0,"i":66790,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Sponsored American Deposit Receipt ICICI Bank Ltd (Repr. 2 shs) (IBN) (L1)","tk":"IBN","p":"India","s":"Financeira","d":66355,"i":0,"m":"USD","isin":"US45104G1040","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Prysmian S.p.A. (PRY)","tk":"PRY","p":"Italy","s":"Industriais","d":64608,"i":0,"m":"EUR","isin":"IT0004176001","cust":"Italy","org":"Directa","via":[]},{"n":"Shs Caixabank S.A. (CABK) (L1)","tk":"CABK","p":"Spain","s":"Financeira","d":61472,"i":0,"m":"EUR","isin":"ES0140609019","cust":"Spain","org":"Directa","via":[]},{"n":"Sponsored Global Deposit Receipt Reliance Industries Ltd (Repr. 4 shs) (RIGD)","tk":"RIGD","p":"India","s":"Energia","d":60375,"i":0,"m":"USD","isin":"US7594701077","cust":"United Kingdom","org":"Directa","via":[]},{"n":"Reg shs Lam Research Corp. (LARd)","tk":"LRCX","p":"United States","s":"Tecnolo informação","d":59602,"i":0,"m":"USD","isin":"US5128073062","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs ServiceNow Inc. (NOW)","tk":"NOW","p":"United States","s":"Tecnolo informação","d":59027,"i":0,"m":"USD","isin":"US81762P1021","cust":"United States","org":"Directa","via":[]},{"n":"BAE Systems plc","tk":"BA","p":"United Kingdom","s":"Industriais","d":0,"i":56541,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Shs Engie SA (ENGI)","tk":"ENGI","p":"France","s":"Utilidade pública","d":56454,"i":0,"m":"EUR","isin":"FR0010208488","cust":"France","org":"Directa","via":[]},{"n":"Lloyds Banking Group plc","tk":"LLOY","p":"United Kingdom","s":"Financeira","d":0,"i":56077,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Glencore plc","tk":"GLEN","p":"United Kingdom","s":"Matérias-primas","d":0,"i":55382,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"National Grid plc","tk":"NG","p":"United Kingdom","s":"Utilidade pública","d":0,"i":54919,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Arista Networks Inc. (ANET)","tk":"ANET","p":"United States","s":"Tecnolo informação","d":53484,"i":0,"m":"USD","isin":"US0404132054","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Xcel Energy Inc (XEL)","tk":"XEL","p":"United States","s":"Utilidade pública","d":52787,"i":0,"m":"USD","isin":"US98389B1008","cust":"United States","org":"Directa","via":[]},{"n":"shs Lonza Group AG (LONN)","tk":"LONN","p":"Suíça","s":"Cuidados saúde","d":52710,"i":0,"m":"CHF","isin":"CH0013841017","cust":"Switzerland","org":"Directa","via":[]},{"n":"Shs UCB SA (UCB)","tk":"UCB","p":"Belgium","s":"Cuidados saúde","d":51545,"i":0,"m":"EUR","isin":"BE0003739530","cust":"Belgium","org":"Directa","via":[]},{"n":"Reg.shs First Quantum Minerals Ltd (FM)","tk":"FM","p":"Canada","s":"Matérias-primas","d":49738,"i":0,"m":"CAD","isin":"CA3359341052","cust":"Canada","org":"Directa","via":[]},{"n":"Reg.shs Absa Group Limited (ABG) (L1)","tk":"ABG","p":"South Africa","s":"Financeira","d":49208,"i":0,"m":"ZAR","isin":"ZAE000255915","cust":"","org":"Directa","via":[]},{"n":"Shs -H- Industrial and Commercial Bank of China Ltd (1398) (L1)","tk":"1398","p":"China","s":"Financeira","d":48526,"i":0,"m":"HKD","isin":"CNE1000003G1","cust":"","org":"Directa","via":[]},{"n":"Reg.shs NRG Energy Inc. (NRG)","tk":"NRG","p":"United States","s":"Utilidade pública","d":46893,"i":0,"m":"USD","isin":"US6293775085","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs MasTec Inc. (MTZ)","tk":"MTZ","p":"United States","s":"Industriais","d":46440,"i":0,"m":"USD","isin":"US5763231090","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Oracle Corp. (ORCL)","tk":"ORCL","p":"United States","s":"Tecnolo informação","d":45882,"i":0,"m":"USD","isin":"US68389X1054","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs -A- Mastercard Inc. (MA)","tk":"MA","p":"United States","s":"Financeira","d":45230,"i":0,"m":"USD","isin":"US57636Q1040","cust":"United States","org":"Directa","via":[]},{"n":"NatWest Group plc","tk":"NWG","p":"United Kingdom","s":"Financeira","d":0,"i":44491,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Texas Instruments Inc. (TXN)","tk":"TXN","p":"United States","s":"Tecnolo informação","d":43999,"i":0,"m":"USD","isin":"US8825081040","cust":"United States","org":"Directa","via":[]},{"n":"Itaúsa S.A.","tk":"ITSA4","p":"Brazil","s":"Financeira","d":0,"i":43393,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"B3 S.A. - Brasil, Bolsa, Balcão","tk":"B3SA3","p":"Brazil","s":"Financeira","d":0,"i":42169,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Reg.shs Rockwell Automation Inc. (ROK)","tk":"ROK","p":"United States","s":"Industriais","d":42137,"i":0,"m":"USD","isin":"US7739031091","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs -A- CrowdStrike Holdings Inc. (CRWD)","tk":"CRWD","p":"United States","s":"Tecnolo informação","d":41772,"i":0,"m":"USD","isin":"US22788C1053","cust":"United States","org":"Directa","via":[]},{"n":"Energy Transfer LP","tk":"ET","p":"United States","s":"Energia","d":0,"i":40257,"m":"","isin":"","cust":"","org":"Indirecta","via":["Schroder GAIA Egerton Equity"]},{"n":"Shs -H- CMOC Group Limited","tk":"","p":"China","s":"Matérias-primas","d":39805,"i":0,"m":"HKD","isin":"CNE100000114","cust":"","org":"Directa","via":[]},{"n":"Reg.shs Trip Com Group Ltd (9961)","tk":"9961","p":"China","s":"Bens cons discr","d":39382,"i":0,"m":"HKD","isin":"KYG9066F1019","cust":"","org":"Directa","via":[]},{"n":"Reg.shs China Hongqiao Group Ltd (1378)","tk":"1378","p":"China","s":"Matérias-primas","d":38862,"i":0,"m":"HKD","isin":"KYG211501005","cust":"","org":"Directa","via":[]},{"n":"Shs -H- PetroChina Co. Ltd (857)","tk":"857","p":"China","s":"Energia","d":38604,"i":0,"m":"HKD","isin":"CNE1000003W8","cust":"","org":"Directa","via":[]},{"n":"Shs /Reg.shs DSV A/S (DSV)","tk":"DSV","p":"Denmark","s":"Industriais","d":38206,"i":0,"m":"DKK","isin":"DK0060079531","cust":"Denmark","org":"Directa","via":[]},{"n":"N-Akt Netflix Inc. (NFLX)","tk":"NFLX","p":"United States","s":"Comunicação","d":38005,"i":0,"m":"USD","isin":"US64110L1061","cust":"United States","org":"Directa","via":[]},{"n":"Ambev S.A.","tk":"ABEV3","p":"Brazil","s":"Consumo básico","d":0,"i":37680,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Sponsored American Deposit Receipt Cemex SAB de CV (Repr. 10 CPO) (CX)","tk":"CX","p":"Mexico","s":"Matérias-primas","d":37310,"i":0,"m":"USD","isin":"US1512908898","cust":"United States","org":"Directa","via":[]},{"n":"WEG S.A.","tk":"WEGE3","p":"Brazil","s":"Industriais","d":0,"i":36592,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Reg.shs Salesforce Inc (CRM)","tk":"CRM","p":"United States","s":"Tecnolo informação","d":36450,"i":0,"m":"USD","isin":"US79466L3024","cust":"United States","org":"Directa","via":[]},{"n":"AXIA Energia SA","tk":"AXIA3","p":"Brazil","s":"Utilidade pública","d":0,"i":35911,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Banco BTG Pactual S.A.","tk":"BPAC11","p":"Brazil","s":"Financeira","d":0,"i":35775,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Reg.shs Intel Corp. (INTC)","tk":"INTC","p":"United States","s":"Tecnolo informação","d":35112,"i":0,"m":"USD","isin":"US4581401001","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Chow Tai Fook Jewellery Group Ltd (1929)","tk":"1929","p":"China","s":"Bens cons discr","d":35023,"i":0,"m":"HKD","isin":"KYG211461085","cust":"","org":"Directa","via":[]},{"n":"SABESP","tk":"SBSP3","p":"Brazil","s":"Utilidade pública","d":0,"i":34551,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Reg.shs Talen Energy Corp (TLN)","tk":"TLN","p":"United States","s":"Utilidade pública","d":34269,"i":0,"m":"USD","isin":"US87422Q1094","cust":"United States","org":"Directa","via":[]},{"n":"Shs EssilorLuxottica SA (EL)","tk":"EL","p":"France","s":"Cuidados saúde","d":33884,"i":0,"m":"EUR","isin":"FR0000121667","cust":"France","org":"Directa","via":[]},{"n":"Standard Chartered PLC","tk":"STAN","p":"United Kingdom","s":"Financeira","d":0,"i":33368,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs -A- Palantir Technologies Inc. (PLTR)","tk":"PLTR","p":"United States","s":"Tecnolo informação","d":33172,"i":0,"m":"USD","isin":"US69608A1088","cust":"United States","org":"Directa","via":[]},{"n":"Sponsored American Deposit Receipt Shs Alibaba Group Holding Ltd (Repr. 8 shs) (BABA)","tk":"BABA","p":"China","s":"Bens cons discr","d":32568,"i":0,"m":"USD","isin":"US01609W1027","cust":"United States","org":"Directa","via":[]},{"n":"Reg. shs GDS Holdings Ltd (9698)","tk":"9698","p":"China","s":"Tecnolo informação","d":32158,"i":0,"m":"HKD","isin":"KYG3902L1095","cust":"","org":"Directa","via":[]},{"n":"Diageo plc","tk":"DGE","p":"United Kingdom","s":"Consumo básico","d":0,"i":31746,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Spotify Technology S.A. (SPOT)","tk":"SPOT","p":"Sweden","s":"Comunicação","d":31304,"i":0,"m":"USD","isin":"LU1778762911","cust":"United States","org":"Directa","via":[]},{"n":"Embraer S.A.","tk":"EMBJ3","p":"Brazil","s":"Industriais","d":0,"i":31286,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Reg.shs -A- Bloom Energy Corp. (BE)","tk":"BE","p":"United States","s":"Industriais","d":31019,"i":0,"m":"USD","isin":"US0937121079","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Trane Technologies Plc (TT)","tk":"TT","p":"United States","s":"Industriais","d":30788,"i":0,"m":"USD","isin":"IE00BK9ZQ967","cust":"United States","org":"Directa","via":[]},{"n":"AIA Group Limited","tk":"1299","p":"Hong Kong","s":"Financeira","d":0,"i":30705,"m":"","isin":"","cust":"","org":"Indirecta","via":["Schroder GAIA Egerton Equity"]},{"n":"Spons American Deposit Receipt America Movil SAB de CV (Repr 20 Shs-B-) (AMX)","tk":"AMX","p":"Mexico","s":"Comunicação","d":29666,"i":0,"m":"USD","isin":"US02390A1016","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs -A- Space Exploration Technologies Corp. (SPCX)","tk":"SPCX","p":"United States","s":"Comunicação","d":29636,"i":0,"m":"USD","isin":"US84615Q1031","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs Marvell Technology Inc. (MRVL)","tk":"MRVL","p":"United States","s":"Tecnolo informação","d":29505,"i":0,"m":"USD","isin":"US5738741041","cust":"United States","org":"Directa","via":[]},{"n":"Moody's Corporation","tk":"MCO","p":"United States","s":"Financeira","d":0,"i":29340,"m":"","isin":"","cust":"","org":"Indirecta","via":["Schroder GAIA Egerton Equity"]},{"n":"Reg.shs Intuitive Surgical Inc. (ISRG)","tk":"ISRG","p":"United States","s":"Cuidados saúde","d":28837,"i":0,"m":"USD","isin":"US46120E6023","cust":"United States","org":"Directa","via":[]},{"n":"Sponsored American Deposit Receipt HDFC Bank Ltd (Repr. 3 shs) (HDB) (L1)","tk":"HDB","p":"India","s":"Financeira","d":28392,"i":0,"m":"USD","isin":"US40415F1012","cust":"United States","org":"Directa","via":[]},{"n":"Amphenol Corporation","tk":"APH","p":"United States","s":"Tecnolo informação","d":0,"i":27975,"m":"","isin":"","cust":"","org":"Indirecta","via":["Schroder GAIA Egerton Equity"]},{"n":"Reckitt Benckiser Group plc","tk":"RKT","p":"United Kingdom","s":"Consumo básico","d":0,"i":27807,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Haleon plc","tk":"HLN","p":"United Kingdom","s":"Consumo básico","d":0,"i":27807,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Prio S.A.","tk":"PRIO3","p":"Brazil","s":"Energia","d":0,"i":26389,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Prudential plc","tk":"PRU","p":"United Kingdom","s":"Financeira","d":0,"i":25258,"m":"","isin":"","cust":"","org":"Indirecta","via":["Vanguard FTSE 100 UCITS ETF"]},{"n":"Reg.shs Lundin Mining Corp. (LUN)","tk":"LUN","p":"Canada","s":"Matérias-primas","d":24971,"i":0,"m":"CAD","isin":"CA5503721063","cust":"Canada","org":"Directa","via":[]},{"n":"Reg.shs MercadoLibre Inc. (MELI)","tk":"MELI","p":"Argentina","s":"Bens cons discr","d":24781,"i":0,"m":"USD","isin":"US58733R1023","cust":"United States","org":"Directa","via":[]},{"n":"Reg.shs.-H- Montage Technology Co., Ltd (6809)","tk":"6809","p":"China","s":"Tecnolo informação","d":24139,"i":0,"m":"HKD","isin":"CNE100007DX6","cust":"","org":"Directa","via":[]},{"n":"Equatorial S.A.","tk":"EQTL3","p":"Brazil","s":"Utilidade pública","d":0,"i":22037,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Sponsored American Deposit Receipt Infosys Ltd (Repr. 1 shs) (INFY)","tk":"INFY","p":"India","s":"Tecnolo informação","d":21820,"i":0,"m":"USD","isin":"US4567881085","cust":"United States","org":"Directa","via":[]},{"n":"Vibra Energia S.A.","tk":"VBBR3","p":"Brazil","s":"Energia","d":0,"i":20404,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Banco do Brasil S.A.","tk":"BBAS3","p":"Brazil","s":"Financeira","d":0,"i":19452,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"XP Inc.","tk":"XP","p":"Brazil","s":"Financeira","d":0,"i":18364,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Gerdau S.A.","tk":"GGBR4","p":"Brazil","s":"Matérias-primas","d":0,"i":17276,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Localiza Rent a Car S.A.","tk":"RENT3","p":"Brazil","s":"Industriais","d":0,"i":17140,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Sponsored American Deposit Receipt GDS Holdings Ltd (Repr. 8 shs -A-) (GDS)","tk":"GDS","p":"China","s":"Tecnolo informação","d":15530,"i":0,"m":"USD","isin":"US36165L1089","cust":"United States","org":"Directa","via":[]},{"n":"COPEL","tk":"CPLE3","p":"Brazil","s":"Utilidade pública","d":0,"i":15371,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"BB Seguridade Participações S.A.","tk":"BBSE3","p":"Brazil","s":"Financeira","d":0,"i":14147,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Suzano S.A.","tk":"SUZB3","p":"Brazil","s":"Matérias-primas","d":0,"i":13875,"m":"","isin":"","cust":"","org":"Indirecta","via":["iShares MSCI Brazil UCITS ETF (DE)"]},{"n":"Sponsored American Deposit Receipt Wal-Mart de Mexico SAB de CV (Repr. 10 shs -V-)","tk":"","p":"Mexico","s":"Consumo básico","d":8106,"i":0,"m":"USD","isin":"US93114W1071","cust":"United States","org":"Directa","via":[]},{"n":"Adobe Inc","tk":"ADBE","p":"United States","s":"Tecnolo informação","d":0,"i":7814,"m":"","isin":"","cust":"","org":"Indirecta","via":["Jupiter Merian Global Eq. Abs. Return"]},{"n":"Comcast Corp Class A","tk":"CMCSA","p":"United States","s":"Comunicação","d":0,"i":7814,"m":"","isin":"","cust":"","org":"Indirecta","via":["Jupiter Merian Global Eq. Abs. Return"]},{"n":"Delta Electronics","tk":"2308","p":"Taiwan","s":"Tecnolo informação","d":0,"i":7814,"m":"","isin":"","cust":"","org":"Indirecta","via":["Jupiter Merian Global Eq. Abs. Return"]},{"n":"Ping An Insurance (Group)","tk":"2318","p":"China","s":"Financeira","d":0,"i":7104,"m":"","isin":"","cust":"","org":"Indirecta","via":["Jupiter Merian Global Eq. Abs. Return"]},{"n":"Rights (for shs) ABN AMRO Bank NV (L1)","tk":"","p":"Netherlands","s":"Financeira","d":0,"i":0,"m":"EUR","isin":"NL0015074AA4","cust":"Netherlands","org":"Indirecta","via":[]}],"opacos":[{"n":"UBS (Lux) Long Term Themes","v":1525065,"o":"Fundo temático global de gestão activa. Top 10 não recebido."},{"n":"UBS (Lux) China Opportunity","v":745916,"o":"Fundo de acções chinesas. Top 10 não recebido."},{"n":"Vanguard FTSE 100 — fora do top 25","v":579081,"o":"78 das 103 posições do ETF, 25,0% da carteira do fundo."},{"n":"iShares MSCI Brazil — fora do top 25","v":202818,"o":"30 das 55 posições do ETF, 14,9% da carteira do fundo."},{"n":"UBS MSCI India ETF","v":127441,"o":"ISIN consta em bases externas como versão sintética (swap). A confirmar com o UBS."}],"veiculos_abertos":[{"n":"Schroder GAIA Egerton Equity","v":682323,"data":"31.08.2026","cob":"Top 10 long = 53,8% do fundo"},{"n":"Jupiter Merian Global Eq. Abs. Return","v":710396,"data":"31.07.2026","cob":"Top 5 long = 5,4% do fundo"},{"n":"Vanguard FTSE 100 UCITS ETF","v":2317251,"data":"31.05.2026","cob":"Top 25 de 103 = 75,0% do ETF"},{"n":"iShares MSCI Brazil UCITS ETF (DE)","v":1360280,"data":"29.07.2026","cob":"Top 25 de 55 = 85,1% do ETF"}]};
+const fmt = n => new Intl.NumberFormat('pt-PT',{maximumFractionDigits:0}).format(Math.round(n));
+const pct = (n,t) => (100*n/t).toLocaleString('pt-PT',{minimumFractionDigits:2,maximumFractionDigits:2})+'%';
+const el = (t,c,x) => { const e=document.createElement(t); if(c)e.className=c; if(x!=null)e.textContent=x; return e; };
+const P = D.patrimonio;
+const anim = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- utilitários ---------- */
+const limpa = n => n.replace(/^(Reg\.shs|Reg shs|Shs|Sponsored American Deposit Receipt|Sponsored Global Deposit Receipt|Pref\.shs|Depositary Receipts|N-Akt|Spons American Deposit Receipt)\s*/i,'')
+                    .replace(/\s*\(Repr[^)]*\)/i,'').replace(/\s*\([A-Z0-9.\-]{1,6}\)\s*$/,'')
+                    .replace(/\s*\(L1\)|\s*-A-|\s*-B-|\s*-H-/g,'').replace(/\s+/g,' ').trim();
+
+/* ---------- panorama ---------- */
+{
+  const k = document.getElementById('kpis');
+  const add=(v,s)=>{const b=el('div','kpi');b.appendChild(el('b',null,v));b.appendChild(el('span',null,s));k.appendChild(b);};
+  add(fmt(P), 'Acções, USD');
+  add(pct(P, D.patrimonio_global), 'Do património total');
+  add(D.posicoes.length, 'Linhas no extrato');
+  add(D.empresas.length, 'Empresas identificadas');
+
+  const paleta=['#17494D','#3C7275','#6FA09D','#9A7B1F','#7D3B34','#A9B8AC','#C9C3B5',
+    '#5A7D80','#8AA6A3','#B0A88F','#46666A','#9FB7A8'];
+  const cores={}; let ci=0;
+  const m = document.getElementById('mandatos');
+  Object.entries(D.carteiras).forEach(([nome,pl])=>{
+    const cats = D.cart_cat[nome]||{};
+    const tot = Object.values(cats).reduce((a,b)=>a+b,0);
+    const r = el('div','stackrow');
+    const h = el('div','stackhead');
+    h.appendChild(el('span',null,nome));
+    const b = el('b',null,fmt(pl)+'  '+pct(pl,P)); h.appendChild(b);
+    r.appendChild(h);
+    const st = el('div','stack');
+    Object.entries(cats).sort((a,b)=>b[1]-a[1]).forEach(([c,v])=>{
+      const s=el('div','seg'); s.style.width=(100*v/tot)+'%';
+      if(!cores[c]) cores[c]=paleta[ci++ % paleta.length];
+      s.style.background=cores[c]; s.title=c+' — '+fmt(v);
+      st.appendChild(s);
+    });
+    r.appendChild(st);
+    r.appendChild(el('div','ovmeta',Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,7)
+      .map(([c,v])=>c+' '+pct(v,tot)).join(',  ')));
+    m.appendChild(r);
+  });
+}
+
+/* ---------- composicao ---------- */
+function desenhaSetorLivro(){
+  const box = document.getElementById('composicao-bars'); box.innerHTML='';
+  const ent = Object.entries(D.setor_livro);
+  const tot = ent.reduce((a,[,v])=>a+v.dir+v.ind,0);
+  const max = Math.max(...ent.map(([,v])=>v.dir+v.ind));
+  ent.forEach(([k,v])=>{
+    const r=el('div','bar');
+    r.appendChild(el('div',null,k));
+    const t=el('div'); t.style.display='flex';
+    const a=el('div','fill d'), b=el('div','fill i');
+    a.style.height=b.style.height='13px';
+    a.title='Detido em nome próprio — '+fmt(v.dir);
+    b.title='Dentro dos ETFs — '+fmt(v.ind);
+    t.appendChild(a); t.appendChild(b); r.appendChild(t);
+    const val=el('div','bv',fmt(v.dir+v.ind));
+    val.appendChild(el('span','bpc',pct(v.dir+v.ind,tot)));
+    r.appendChild(val); box.appendChild(r);
+    const wa=100*v.dir/max, wb=100*v.ind/max;
+    if(anim) requestAnimationFrame(()=>{a.style.width=wa+'%';b.style.width=wb+'%';});
+    else {a.style.width=wa+'%';b.style.width=wb+'%';}
+  });
+  const lg=el('div','legend');
+  lg.innerHTML='<span><i class="sw d"></i>Acções em nome próprio</span>'+
+               '<span><i class="sw i"></i>Acções dentro dos dois ETFs de índice</span>';
+  box.appendChild(lg);
+}
+
+function desenhaBarras(chave){
+  if(chave==='setor_livro') return desenhaSetorLivro();
+  const box = document.getElementById('composicao-bars'); box.innerHTML='';
+  const ent = Object.entries(D[chave]).filter(([k,v])=>v>0);
+  const tot = ent.reduce((a,[,v])=>a+v,0), max = ent[0][1];
+  ent.slice(0,16).forEach(([k,v])=>{
+    const r=el('div','bar');
+    r.appendChild(el('div',null,k));
+    const t=el('div'); const f=el('div','bt'); t.appendChild(f); r.appendChild(t);
+    const val=el('div','bv',fmt(v)); const s=el('span','bpc',pct(v,tot)); val.appendChild(s);
+    r.appendChild(val); box.appendChild(r);
+    const w=100*v/max;
+    if(anim) requestAnimationFrame(()=>f.style.width=w+'%'); else f.style.width=w+'%';
+  });
+}
+document.getElementById('eixo').addEventListener('change',e=>desenhaBarras(e.target.value));
+desenhaBarras('setor_livro');
+
+/* ---------- tabela ---------- */
+{
+  const tb=document.querySelector('#tbl tbody'), q=document.getElementById('q'),
+        fc=document.getElementById('fc'), fk=document.getElementById('fk'), cnt=document.getElementById('cnt');
+  [...new Set(D.posicoes.map(p=>p.c))].sort().forEach(v=>fc.appendChild(new Option(v,v)));
+  [...new Set(D.posicoes.map(p=>p.reg).filter(Boolean))].sort().forEach(v=>fk.appendChild(new Option(v,v)));
+  let ord='v', dir=-1;
+  function render(){
+    const s=q.value.toLowerCase(), c=fc.value, k=fk.value;
+    let rows=D.posicoes.filter(p=>(!c||p.c===c)&&(!k||p.reg===k)&&
+      (!s||(p.d+' '+p.tk+' '+p.s+' '+p.reg).toLowerCase().includes(s)));
+    rows.sort((a,b)=>{const x=a[ord],y=b[ord];
+      return (typeof x==='number'? x-y : String(x).localeCompare(String(y)))*dir;});
+    tb.innerHTML='';
+    rows.forEach(p=>{
+      const tr=el('tr');
+      [p.c,limpa(p.d),p.tk,p.m,p.reg].forEach((v,i)=>{
+        const td=el('td',null,v);
+        if(i===1) td.title=p.d;
+        tr.appendChild(td);
+      });
+      tr.appendChild(el('td','r num',fmt(p.v)));
+      tr.appendChild(el('td','r tag',pct(p.v,P)));
+      tb.appendChild(tr);
+    });
+    cnt.textContent=rows.length+' de '+D.posicoes.length+' · '+fmt(rows.reduce((a,p)=>a+p.v,0))+' USD';
+  }
+  document.querySelectorAll('#tbl th').forEach(th=>th.addEventListener('click',()=>{
+    const k=th.dataset.k; dir = (k===ord)? -dir : (k==='v'?-1:1); ord=k; render();
+  }));
+  [q,fc,fk].forEach(e=>e.addEventListener('input',render));
+  render();
+}
+
+/* ---------- classificacao ---------- */
+{
+  const tb=document.querySelector('#ctbl tbody'), q=document.getElementById('cq'),
+        cs=document.getElementById('cs'), co=document.getElementById('co'),
+        cnt=document.getElementById('ccnt');
+  const linhas=D.empresas.map(e=>Object.assign({t:e.d+e.i},e));
+  [...new Set(linhas.map(e=>e.s).filter(Boolean))].sort()
+    .forEach(v=>cs.appendChild(new Option(v,v)));
+  let ord='t', dir=-1;
+  function render(){
+    const s=q.value.toLowerCase(), se=cs.value, og=co.value;
+    let rows=linhas.filter(e=>(!se||e.s===se)&&(!og||e.org===og)&&
+      (!s||(e.n+' '+e.tk+' '+e.isin+' '+e.s+' '+e.p).toLowerCase().includes(s)));
+    rows.sort((a,b)=>{const x=a[ord],y=b[ord];
+      return (typeof x==='number'? x-y : String(x).localeCompare(String(y)))*dir;});
+    tb.innerHTML='';
+    rows.forEach(e=>{
+      const tr=el('tr');
+      const nd=el('td',null,limpa(e.n)); nd.title=e.n; tr.appendChild(nd);
+      [e.tk,e.s,e.p,e.m,e.isin].forEach(v=>tr.appendChild(el('td',null,v||'—')));
+      const og=el('td',null,e.org);
+      if(e.org==='Ambas') og.style.color='var(--signal)';
+      if(e.org==='Indirecta') og.style.color='var(--muted)';
+      tr.appendChild(og);
+      tr.appendChild(el('td','r num',fmt(e.t)));
+      tb.appendChild(tr);
+    });
+    cnt.textContent=rows.length+' de '+linhas.length+' empresas · '+
+      fmt(rows.reduce((a,e)=>a+e.t,0))+' USD';
+  }
+  document.querySelectorAll('#ctbl th').forEach(th=>th.addEventListener('click',()=>{
+    const k=th.dataset.k; dir=(k===ord)? -dir : (k==='t'?-1:1); ord=k; render();
+  }));
+  [q,cs,co].forEach(e=>e.addEventListener('input',render));
+  render();
+}
+
+/* ---------- sobreposicoes ---------- */
+{
+  const box=document.getElementById('sobrep');
+  const lista=D.empresas.filter(e=>e.d>0&&e.i>0).sort((a,b)=>(b.d+b.i)-(a.d+a.i));
+  const max=Math.max(...lista.map(e=>e.d+e.i));
+  lista.forEach(e=>{
+    const d=el('div','ov');
+    const h=el('div','ovhead');
+    const n=el('div','ovname'); n.textContent=limpa(e.n)+(e.tk?'  '+e.tk:'');
+    h.appendChild(n);
+    h.appendChild(el('div','ovmult','×'+((e.d+e.i)/e.d).toLocaleString('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:1})));
+    d.appendChild(h);
+    const bar=el('div','ovbar');
+    const a=el('div','fill d'), b=el('div','fill i');
+    a.style.width=(100*e.d/max)+'%'; b.style.width=(100*e.i/max)+'%';
+    bar.appendChild(a); bar.appendChild(b); d.appendChild(bar);
+    d.appendChild(el('div','ovmeta','Em nome próprio '+fmt(e.d)+'  ·  nos veículos '+fmt(e.i)+
+      '  ·  total '+fmt(e.d+e.i)+' USD  ·  via '+e.via.join(', ')));
+    box.appendChild(d);
+  });
+}
+
+/* ---------- opacos ---------- */
+{
+  const box=document.getElementById('opacos');
+  const lista=[...D.opacos].sort((a,b)=>b.v-a.v);
+  const max=lista[0].v, tot=lista.reduce((a,b)=>a+b.v,0);
+  lista.forEach(o=>{
+    const r=el('div','bar'); r.style.gridTemplateColumns='minmax(150px,240px) 1fr 104px';
+    const n=el('div',null,o.n); n.title=o.o; r.appendChild(n);
+    const t=el('div'); const f=el('div','bt'); f.style.background='var(--indirect)';
+    f.style.backgroundImage='repeating-linear-gradient(135deg,transparent 0 4px,rgba(0,0,0,.16) 4px 5px)';
+    t.appendChild(f); r.appendChild(t);
+    const v=el('div','bv',fmt(o.v)); v.appendChild(el('span','bpc',pct(o.v,P))); r.appendChild(v);
+    box.appendChild(r);
+    const w=100*o.v/max;
+    if(anim) requestAnimationFrame(()=>f.style.width=w+'%'); else f.style.width=w+'%';
+  });
+  const s=el('div','bar'); s.style.borderTop='1px solid var(--ink)'; s.style.borderBottom='0';
+  s.appendChild(el('div',null,'Total do livro de acções sem transparência por nome'));
+  s.appendChild(el('div'));
+  const v=el('div','bv',fmt(tot)); v.appendChild(el('span','bpc',pct(tot,P))); s.appendChild(v);
+  box.appendChild(s);
+}
+
+/* ---------- nav activa ---------- */
+{
+  const links=[...document.querySelectorAll('nav a')];
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting)
+      links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)); });
+  },{rootMargin:'-20% 0px -70% 0px'});
+  document.querySelectorAll('section').forEach(s=>obs.observe(s));
+}
+</script>
+</body>
+</html>
