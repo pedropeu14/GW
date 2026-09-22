@@ -1,4 +1,4 @@
-# GW — carteira de ações
+# GW — exposição acionária
 
 Página estática única, sem dependências externas. Abrediretamente do disco ou a partir do GitHub Pages.
 
